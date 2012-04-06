@@ -1,4 +1,4 @@
-package com.unina.tata.efgtranslatornew;
+package com.unina.tata.translator;
 
 import java.util.ArrayList;
 
@@ -15,18 +15,51 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-public class translatorEFGnew {
+public class translator {
 	public static Document tataEFGDocument;
 	public static Document tataGuiTreeDocument;
 	public static Document GuitarEFGDocument;
 	private static ArrayList<String> eventsList;
-	
+	public static String dotFile;
 	
 	public static void translateefg() throws XPathExpressionException, ParserConfigurationException {
 		createGuitarDocument();
 		EventListInGuitar();
 		MatrixInGuitar();
 		System.out.println("DONE");
+	}
+	
+	public static void createFSM() throws XPathExpressionException {
+		dotFile="digraph finite_state_machine {\n" +
+				"rankdir=LR;\n" +
+				"node [shape = circle];\n";
+		ArrayList<String> insertedEvents = new ArrayList<String>();  
+		
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		XPathExpression expr = xpath.compile("//TRANSITION");
+		Object result = expr.evaluate(tataGuiTreeDocument, XPathConstants.NODESET);
+		NodeList nodes = (NodeList) result;	
+		for (int i=0; i<nodes.getLength();i++) {
+			Element elem = (Element) nodes.item(i);
+			Element start = (Element) elem.getElementsByTagName("START_ACTIVITY").item(0);
+			Element EventElement = (Element) elem.getElementsByTagName("EVENT").item(0);
+			Element end = (Element) elem.getElementsByTagName("FINAL_ACTIVITY").item(0);
+			NodeList inputs= elem.getElementsByTagName("INPUT");
+			if(!insertedEvents.contains(EventElement.getAttribute("id"))){
+				//inserisci riga file DOT
+				dotFile=dotFile+ start.getAttribute("id")+
+						"->" + end.getAttribute("id")+
+						"[label=\""+EventElement.getAttribute("id")+"\"];\n";
+				for (int j=0; j< inputs.getLength();j++) {
+					Element input= (Element) inputs.item(j);
+					dotFile=dotFile+ start.getAttribute("id")+
+							"->" + start.getAttribute("id")+
+							"[label=\""+input.getAttribute("id")+"\"];\n";
+				}
+				insertedEvents.add(EventElement.getAttribute("id"));
+			}
+		}
+		dotFile=dotFile+"}\n";
 	}
 	
 	private static void EventListInGuitar() throws XPathExpressionException {
