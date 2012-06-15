@@ -15,7 +15,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-public class translatorEFG {
+public class translator {
 	public static Document tataEFGDocument;
 	public static Document tataGuiTreeDocument;
 	public static Document GuitarEFGDocument;
@@ -24,18 +24,17 @@ public class translatorEFG {
 	
 	public static void translateefg() throws XPathExpressionException, ParserConfigurationException {
 		createGuitarDocument();
-		EventListInGuitar();
-		MetricInGuitar();
+		eventListInGuitar();
+		matrixInGuitar();
 	}
 	
-	private static void EventListInGuitar() throws XPathExpressionException {
+	private static void eventListInGuitar() throws XPathExpressionException {
 		eventsList = new ArrayList<String>();		 
 		XPath xpath = XPathFactory.newInstance().newXPath();
 		XPathExpression expr = xpath.compile("//EVENT");
 		Object result = expr.evaluate(tataEFGDocument, XPathConstants.NODESET);
 		NodeList nodes = (NodeList) result;	
 		for (int i=0; i<nodes.getLength();i++) {
-			
 			Element elem = (Element) nodes.item(i);
 			Element eventid = GuitarEFGDocument.createElement("EventId");
 			eventid.setTextContent(elem.getAttribute("id"));
@@ -68,7 +67,7 @@ public class translatorEFG {
 		}
 	}
 	
-	private static void MetricInGuitar() throws XPathExpressionException {
+	private static void matrixInGuitar() throws XPathExpressionException {
 		Element eventgraph = GuitarEFGDocument.createElement("EventGraph");
 		for (int i=0; i<eventsList.size(); i++){
 			Element rowgraph = GuitarEFGDocument.createElement("Row");
@@ -77,6 +76,8 @@ public class translatorEFG {
 			XPathExpression eventExpr = eventXpath.compile("//EVENT[@id='"+eventsList.get(i)+"']");
 			Object eventResult = eventExpr.evaluate(tataGuiTreeDocument, XPathConstants.NODESET);
 			NodeList eventNodes = (NodeList) eventResult;			
+			String startActivityId=((Element) eventNodes.item(0).getPreviousSibling().getPreviousSibling()
+					.getPreviousSibling().getPreviousSibling()).getAttribute("id");
 			String finalActivityId= ((Element) eventNodes.item(0).getNextSibling().getNextSibling())
 					.getAttribute("id");
 			

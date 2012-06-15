@@ -18,7 +18,7 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Document;
 
-import com.unina.tata.translator.translator;
+import com.unina.tata.efgtranslator.*;
 
 public class FileManagerEFG {
 	private static File dir;
